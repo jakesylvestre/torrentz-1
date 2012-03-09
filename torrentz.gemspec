@@ -4,9 +4,9 @@ require File.expand_path('../lib/torrentz/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Albert Llop"]
   gem.email         = ["mrsimo@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
+  gem.description   = %q{torrentz.eu ruby client to search and download torrentz & magnets}
+  gem.summary       = %q{torrentz.eu ruby client to search and download torrentz & magnets}
+  gem.homepage      = "https://github.com/mrsimo/ruby-torrentz"
 
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.files         = `git ls-files`.split("\n")
