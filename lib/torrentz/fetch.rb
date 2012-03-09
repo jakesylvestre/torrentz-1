@@ -6,38 +6,78 @@ module Torrentz
       @url = url
     end
 
-    def torrent_url
-      torrentz_doc = Nokogiri::HTML(open(@url))
-      torrentz_doc.css("div.download a[rel=e]").each do |a|
-        logger.info "Considering #{a["href"]}"
-        case a["href"]
-        when /thepiratebay/
-          logger.info "Found Piratebay!"
-          return PirateBay.new(a["href"]).get
+    def get
+      {
+        :magnet  => get_magnet,
+        :torrent => get_torrent
+      }
+    end
+
+    private
+
+    def get_torrent
+      candidate_urls.each do |candidate_url|
+        case candidate_url
+        when /vertor\.com/
+          logger.info "Found Vertor: #{candidate_url}"
+          return Vertor.new(candidate_url).get
         end
       end
+
+      return nil
     end
 
-    def download
-      open torrent_url
-    end
-
-    class PirateBay
-      include Torrentz::Logger
-
-      URL       = "http://thepiratebay.se/torrent/"
-      ID_REGEXP = /thepiratebay\.\w\w\w?\/torrent\/(\d+)\//
-
-      def initialize(url)
-        url =~ ID_REGEXP
-        @id  = $1
-        logger.info "Torrent id = #{@id}"
+    def get_magnet
+      candidate_urls.each do |candidate_url|
+        case candidate_url
+        when /thepiratebay/
+          logger.info "Found Piratebay!"
+          return PirateBay.new(candidate_url).get
+        end
       end
 
+      return nil
+    end
+
+    def torrentz_doc
+      @torrentz_doc ||= Nokogiri::HTML(open(@url))
+    end
+
+    def candidate_urls
+      @candidate_urls ||= begin
+        torrentz_doc.css("div.download a[rel=e]").map{|a| a["href"]}
+      end
+    end
+
+    class Simple
+      include Torrentz::Logger
+
+      def initialize(url)
+        @url = url
+      end
+
+      def doc
+        @doc ||= Nokogiri::HTML(open(@url))
+      end
+    end
+
+    ##
+    # Currently returns magnet links only.
+    class PirateBay < Simple
       def get
-        doc = Nokogiri::HTML(open(URL + @id))
-        a = doc.css(".download a").find { |a| a["href"] =~ /torrents.thepiratebay/}
-        a ? a["href"] : nil
+        a = doc.css(".download a").first['href']
+      end
+    end
+
+    ##
+    # Returns torrent urls only.
+    class Vertor < Simple
+      def get
+        candidate = doc.css('ul.down_but li.bt a').map do |a|
+          a['href']
+        end.find do |url|
+          url =~ /mod=download/
+        end
       end
     end
   end
