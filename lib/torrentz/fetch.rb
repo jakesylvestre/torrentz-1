@@ -2,6 +2,8 @@ module Torrentz
   class Fetch
     include Torrentz::Logger
 
+    attr_accessor :url
+
     def initialize(url)
       @url = url
     end
@@ -24,14 +26,14 @@ module Torrentz
         end
       end
 
-      return nil
+      return torrent_from_torrentz_url
     end
 
     def get_magnet
       candidate_urls.each do |candidate_url|
         case candidate_url
         when /thepiratebay/
-          logger.info "Found Piratebay!"
+          logger.info "Found Piratebay: #{candidate_url}"
           return PirateBay.new(candidate_url).get
         end
       end
@@ -40,13 +42,20 @@ module Torrentz
     end
 
     def torrentz_doc
-      @torrentz_doc ||= Nokogiri::HTML(open(@url))
+      @torrentz_doc ||= Nokogiri::HTML(open(url))
     end
 
     def candidate_urls
       @candidate_urls ||= begin
         torrentz_doc.css("div.download a[rel=e]").map{|a| a["href"]}
       end
+    end
+
+    ##
+    # Uses torcache to try to fetch a torrent.
+    def torrent_from_torrentz_url
+      torrent_id = url.split("/").last
+      "https://torcache.net/torrent/#{torrent_id}.torrent"
     end
 
     class Simple
