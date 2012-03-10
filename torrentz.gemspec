@@ -17,6 +17,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency "rack"
   gem.add_dependency "nokogiri"
+  gem.add_dependency "addressable"
 
   gem.add_development_dependency "text"
   gem.add_development_dependency "typhoeus"

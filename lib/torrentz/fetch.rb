@@ -1,3 +1,5 @@
+require 'addressable/uri'
+
 module Torrentz
   class Fetch
     include Torrentz::Logger
@@ -42,7 +44,7 @@ module Torrentz
     end
 
     def torrentz_doc
-      @torrentz_doc ||= Nokogiri::HTML(open(url))
+      @torrentz_doc ||= Nokogiri::HTML(open(Addressable::URI.encode(url)))
     end
 
     def candidate_urls
@@ -66,7 +68,7 @@ module Torrentz
       end
 
       def doc
-        @doc ||= Nokogiri::HTML(open(@url))
+        @doc ||= Nokogiri::HTML(open(Addressable::URI.encode(@url)))
       end
     end
 
