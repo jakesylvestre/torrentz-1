@@ -17,4 +17,8 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency "rack"
   gem.add_dependency "nokogiri"
+
+  gem.add_development_dependency "text"
+  gem.add_development_dependency "typhoeus"
+  gem.add_development_dependency "torrent-ruby"
 end
