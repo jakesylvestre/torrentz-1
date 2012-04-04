@@ -4,20 +4,25 @@ module Torrentz
 
     attr_reader :url
 
-    URL = "http://kat.ph/search/%s/?rss=1&field=seeders&sorder=desc"
+    URL = "http://kat.ph/usearch/%s/?field=seeders&sorder=desc"
 
     def initialize(query)
       @url = URL % escape(query)
     end
 
     def get
-      doc = Nokogiri::XML(open(url))
-      torrents = doc.xpath('//rss/channel/item/torrentLink').map(&:text)
-      hashes   = doc.xpath('//rss/channel/item/hash').map(&:text)
-      names    = doc.xpath('//rss/channel/item/title').map(&:text)
+      doc = Nokogiri::HTML(open(url))
 
-      names.zip(hashes, torrents).map do |name, hash, torrent|
-        Result.new(name, hash, torrent)
+      table = doc.css('table.data')
+
+      names    = table.css('.torrentname>a.plain').map { |a| a.text }
+      magnets  = table.css('a.imagnet').map { |a| a[:href] }
+      torrents = table.css('a.idownload').map { |a| a[:href] }.select { |url| url =~ /torcache/ }
+      seed     = table.css('td.green').map(&:text)
+      leech    = table.css('td.red').map(&:text)
+
+      names.zip(magnets, torrents, seed, leech).map do |name, magnet, torrent, seed, leech|
+        Result.new(name, magnet, torrent, seed, leech)
       end
     end
   end

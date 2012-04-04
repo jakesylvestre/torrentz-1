@@ -13,19 +13,15 @@ module Torrentz
     include Torrentz::Logger
 
     def get(query)
-      search_results = Search.new(query).get
-      logger.info "Found #{search_results.size} candidates"
+      results = Search.new(query).get
+      logger.info "Found #{results.size} candidates"
 
-      return nil if search_results.empty?
+      return nil if results.empty?
 
-      results = {}
-
-      search_results.each do |search_result|
-        results.merge!(Fetch.new(search_result.url).get)
-        break if results[:torrent] && results[:magnet]
-      end
-
-      results
+      {
+        :torrent => results.first.torrent,
+        :magnet  => results.first.magnet
+      }
     end
   end
 end
