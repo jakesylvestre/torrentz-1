@@ -2,33 +2,22 @@ module Torrentz
   class Search
     include Rack::Utils
 
-    URL = "http://torrentz.eu/feed?q="
+    attr_reader :url
+
+    URL = "http://kat.ph/search/%s/?rss=1&field=seeders&sorder=desc"
 
     def initialize(query)
-      @url = URL + escape(query)
+      @url = URL % escape(query)
     end
 
     def get
-      @urls ||= urls_from(@url)
-    end
-
-    class Result
-      attr_reader :url, :name
-
-      def initialize(url, name)
-        @url, @name = url, name
-      end
-    end
-
-    private
-
-    def urls_from(url)
       doc = Nokogiri::XML(open(url))
-      urls  = doc.xpath('//rss/channel/item/guid').map(&:text)
-      names = doc.xpath('//rss/channel/item/title').map(&:text)
+      torrents = doc.xpath('//rss/channel/item/torrentLink').map(&:text)
+      hashes   = doc.xpath('//rss/channel/item/hash').map(&:text)
+      names    = doc.xpath('//rss/channel/item/title').map(&:text)
 
-      urls.zip(names).map do |url, name|
-        Result.new(url, name)
+      names.zip(hashes, torrents).map do |name, hash, torrent|
+        Result.new(name, hash, torrent)
       end
     end
   end

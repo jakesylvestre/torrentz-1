@@ -4,6 +4,7 @@ require "nokogiri"
 require "open-uri"
 
 require 'torrentz/logger'
+require 'torrentz/result'
 require 'torrentz/search'
 require 'torrentz/fetch'
 
